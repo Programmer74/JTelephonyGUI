@@ -195,11 +195,12 @@ public class Controller {
     private void updateServerIP() {
         String ip = "";
         try {
-            ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
-            ip = "64.52.85.142";
+            //ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
+            //ip = "146.185.142.134";
+            ip = "localhost";
             //while(txtServerIP == null) {Thread.yield();}
             txtServerIP.setText(ip);
-            txtServerIP.setDisable(true);
+            //txtServerIP.setDisable(true);
         } catch (Exception ex ) {ex.printStackTrace();}
     }
 
