@@ -17,7 +17,7 @@ public class Main extends Application {
         primaryStage.setTitle("JT");
         primaryStage.setScene(new Scene(root, 300, 300));
         primaryStage.setOnCloseRequest(e -> {Platform.exit(); System.exit(0);});
-        primaryStage.setOnShown(e -> MainController.formShown = true);
+        primaryStage.setOnShown(e -> LoginController.formShown = true);
         primaryStage.setResizable(false);
 
         primaryStage.show();

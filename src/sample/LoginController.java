@@ -33,6 +33,7 @@ public class LoginController {
     @FXML private TextField txtServerIP;
     @FXML private TextField txtNickname;
 
+    @FXML private PasswordField txtPassword;
 
     @FXML private Pane paneConnect;
 
@@ -55,10 +56,10 @@ public class LoginController {
     private void updateServerIP() {
         String ip = "";
         try {
-            //ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
+            ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
             //ip = "146.185.142.134";
-            ip = "localhost";
-            //while(txtServerIP == null) {Thread.yield();}
+            //ip = "localhost";
+            while(txtServerIP == null) {Thread.yield();}
             txtServerIP.setText(ip);
             //txtServerIP.setDisable(true);
         } catch (Exception ex ) {ex.printStackTrace();}
@@ -78,11 +79,13 @@ public class LoginController {
             ((Node)(event.getSource())).getScene().getWindow().hide();
 
             MainController mc = (MainController)fxmlLoader.getController();
+            stage.setOnCloseRequest(e -> {Platform.exit(); System.exit(0);});
 
             String s2 = txtServerIP.getText();
             String nick = txtNickname.getText();
+            String pass = txtPassword.getText();
             System.out.println("CONNECT " + s2);
-            mc.getSrv().connect(s2, 7000, nick);
+            mc.getSrv().connect(s2, 7000, nick + ":" + Utils.stringToMD5(pass));
             if (mc.getSrv().isConnected()) {
                 stage.show();
                 mc.doConnectSuccess();

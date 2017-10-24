@@ -74,6 +74,11 @@ public class ServerInteraction {
             outputs.writeUTF("nick " + nick);
             String myIdStr = inputs.readUTF();
             myId = Integer.parseInt(myIdStr);
+
+            if (myId < 0) {
+                throw new Exception("Wrong password");
+            }
+
             System.out.println("my id is " + myId);
             audio.setMyID(myId);
 
