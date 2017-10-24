@@ -95,7 +95,7 @@ public class ServerInteraction {
         } catch (Exception ex) {
             System.err.println("In do command exception: " + ex.toString());
             isConnected = false;
-            Controller.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
+            MessageBoxes.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
             return "";
         }
     }

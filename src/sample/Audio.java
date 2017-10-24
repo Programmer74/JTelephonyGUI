@@ -97,7 +97,7 @@ public class Audio {
         catch (Exception ex) {
             format = null;
             ex.printStackTrace();
-            Controller.showCriticalErrorAlert(ex.getMessage(), ex.toString());
+            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
         }
 
         nwConnection = new Networking(sendToIP, sendToPort);
@@ -108,7 +108,7 @@ public class Audio {
         System.err.println("talk is called");
         if (isTalking) return;
         if (format == null) {
-            Controller.showCriticalErrorAlert("format is null", "");
+            MessageBoxes.showCriticalErrorAlert("format is null", "");
             return;
         }
         if (DEBUG) System.out.println("Talking initialized");
@@ -126,7 +126,7 @@ public class Audio {
         }
         catch (Exception ex) {
             System.out.println("Error: " + ex.toString());
-            Controller.showCriticalErrorAlert(ex.getMessage(), ex.toString());
+            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
             isTalking = false;
             return;
         }
@@ -181,7 +181,7 @@ public class Audio {
         catch (Exception ex) {
             if (DEBUG) System.out.println(ex.toString());
             ex.printStackTrace();
-            Controller.showCriticalErrorAlert(ex.getMessage(), ex.toString());
+            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
             isListening = false;
         }
 

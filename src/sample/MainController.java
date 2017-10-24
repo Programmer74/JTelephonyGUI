@@ -18,7 +18,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
-public class Controller {
+public class MainController {
+
+    public ServerInteraction getSrv() {
+        return srv;
+    }
 
     private ServerInteraction srv = new ServerInteraction();
     private Audio audio;
@@ -50,10 +54,10 @@ public class Controller {
     private final int callWaitTime = 30;
     private String currentStatus = "";
 
-    public Controller() {
+    public MainController() {
         Thread t = new Thread(() -> {
-            while(!Controller.formShown) Thread.yield();
-            updateServerIP();
+            while(!MainController.formShown) Thread.yield();
+            //updateServerIP();
         });
         t.start();
     }
@@ -95,28 +99,6 @@ public class Controller {
         System.out.println(status);
     }
 
-    //alerts
-    private void showAlert(String prompt, String title) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                Alert msgbox = new Alert(Alert.AlertType.INFORMATION);
-                msgbox.setTitle(title);
-                msgbox.setContentText(prompt);
-                msgbox.showAndWait();
-            }
-        });
-    }
-    public static void showCriticalErrorAlert(String prompt, String title) {
-        Platform.runLater(() -> {
-            Alert msgbox = new Alert(Alert.AlertType.ERROR);
-            msgbox.setTitle(title);
-            msgbox.setContentText(prompt);
-            msgbox.showAndWait();
-            System.exit(-1);
-        });
-    }
-
     //when we detect incoming call in proxy
     private void notifyIncomingCall(String arg) {
         Platform.runLater(new Runnable() {
@@ -154,19 +136,19 @@ public class Controller {
     //when person we are talking to finishes call
     private void notifyStoppedCall() {
         srv.hasBeenTalking = false;
-        showAlert("Your call was finished.", "Call info");
+        MessageBoxes.showAlert("Your call was finished.", "Call info");
         srv.doCommand("call_hangup");
     }
     //when person we are talking to breaks connection
     private void notifyCompanionErrorCall() {
         srv.hasBeenTalking = false;
-        showAlert("Your companion suddenly disconnected", "Call info");
+        MessageBoxes.showAlert("Your companion suddenly disconnected", "Call info");
         srv.doCommand("call_hangup");
     }
     //when person we are trying to call says no
     private void notifyNotAcceptedCall() {
         System.out.println("Note: your call was not accepted.");
-        showAlert("Your call was not accepted.", "Call info");
+        MessageBoxes.showAlert("Your call was not accepted.", "Call info");
         srv.doCommand("call_hangup");
         setStatus("Call declined");
     }
@@ -183,25 +165,6 @@ public class Controller {
         txtCallTo.setDisable(true);
         cmdCall.setDisable(true);
         cmdFinishCall.setVisible(true);
-    }
-
-    //switches panes with animations?
-    private void switchPane(Pane oldPane, Pane newPane) {
-        oldPane.setVisible(false);
-        newPane.setVisible(true);
-    }
-
-    //updates server ip address
-    private void updateServerIP() {
-        String ip = "";
-        try {
-            //ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
-            //ip = "146.185.142.134";
-            ip = "localhost";
-            //while(txtServerIP == null) {Thread.yield();}
-            txtServerIP.setText(ip);
-            //txtServerIP.setDisable(true);
-        } catch (Exception ex ) {ex.printStackTrace();}
     }
 
     private void updateClientsNoWrap() {
@@ -242,16 +205,6 @@ public class Controller {
         th.setDaemon(true);
         th.start();
 
-    }
-
-    @FXML
-    void cmdCallPressed(ActionEvent event) {
-        String s = txtCallTo.getText();
-        if (s.equals("")) return;
-        System.out.println("CALL " + s);
-        String ans = srv.doCommand("call", s);
-        System.out.println(ans);
-        setStatus("Calling to " + s);
     }
 
     //MAIN STATUS THREAD
@@ -350,23 +303,25 @@ public class Controller {
         }
     });
 
-    @FXML
-    void cmdConnectPressed(ActionEvent event) {
-        String s2 = txtServerIP.getText();
-        String nick = txtNickname.getText();
-        System.out.println("CONNECT " + s2);
-        srv.connect(s2, 7000, nick);
-        if (srv.isConnected()) {
-            audio = srv.getAudio();
-            switchPane(paneConnect, paneMain);
-            statusThread.start();
-            audio.nwConnection.sendVoicePacket(new VoicePacket(audio.getMyID(), 0, 0, new byte[3]));
-            //updateClients();
-        } else {
-            showCriticalErrorAlert("Cannot connect to server.\nTry again later.", "Error");
-        }
+    //@FXML
+    public void doConnectSuccess() {
+
+        audio = srv.getAudio();
+        statusThread.start();
+        audio.nwConnection.sendVoicePacket(new VoicePacket(audio.getMyID(), 0, 0, new byte[3]));
 
     }
+
+    @FXML
+    void cmdCallPressed(ActionEvent event) {
+        String s = txtCallTo.getText();
+        if (s.equals("")) return;
+        System.out.println("CALL " + s);
+        String ans = srv.doCommand("call", s);
+        System.out.println(ans);
+        setStatus("Calling to " + s);
+    }
+
 
     @FXML
     void cmdFinishCallPressed(ActionEvent event) {
