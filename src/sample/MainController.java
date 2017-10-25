@@ -135,15 +135,26 @@ public class MainController {
     }
     //when person we are talking to finishes call
     private void notifyStoppedCall() {
-        srv.hasBeenTalking = false;
+        //srv.hasBeenTalking = false;
         MessageBoxes.showAlert("Your call was finished.", "Call info");
-        srv.doCommand("call_hangup");
+        //srv.doCommand("call_hangup");
     }
     //when person we are talking to breaks connection
     private void notifyCompanionErrorCall() {
         srv.hasBeenTalking = false;
         MessageBoxes.showAlert("Your companion suddenly disconnected", "Call info");
         srv.doCommand("call_hangup");
+    }
+    private void notifyCompanionBusy() {
+        srv.hasBeenTalking = false;
+        MessageBoxes.showAlert("Your companion is busy now", "Call info");
+        srv.doCommand("call_hangup");
+    }
+    private void notifyCallError() {
+        srv.hasBeenTalking = false;
+        MessageBoxes.showAlert("An error occurred in call", "Call info");
+        srv.doCommand("call_hangup");
+        System.exit(0);
     }
     //when person we are trying to call says no
     private void notifyNotAcceptedCall() {
@@ -261,12 +272,17 @@ public class MainController {
 
                         }
                         if (cmd.equals("nothing") && (srv.hasBeenTalking)) {
-                            if (isWaitingAnswer) {
+                            /*if (isWaitingAnswer) {
                                 //System.out.println("OH SHIT");
                                 //System.exit(0);
                             }
-                            notifyStoppedCall();
                             cmdFinishCallPressed(null);
+                            notifyStoppedCall();*/
+
+                        }
+                        if (cmd.equals("calling_to") && arg.equals("finished")) {
+                            cmdFinishCallPressed(null);
+                            notifyStoppedCall();
                         }
                         if (cmd.equals("calling_to") && arg.equals("hanged")) {
                             callWaitCounter = 0;
@@ -277,6 +293,7 @@ public class MainController {
                             } else {
                                 //we havent been talking, client we were calling said no
                                 notifyNotAcceptedCall();
+                                hangupCall();
                             }
                         }
                         if (cmd.equals("calling_to") && (arg.equals("wait"))) {
@@ -294,7 +311,7 @@ public class MainController {
                     Thread.yield();
                     Thread.sleep(1000);
                 } catch (Exception ex) {
-                    System.out.println(">>" + ex.toString());
+                    System.out.println("StatusThread: " + ex.toString());
                     ex.printStackTrace();
                 }
                 ;
@@ -319,20 +336,37 @@ public class MainController {
         System.out.println("CALL " + s);
         String ans = srv.doCommand("call", s);
         System.out.println(ans);
+        if (ans.equals("busy")) {
+            notifyCompanionBusy();
+            return;
+        }
+        if (ans.equals("error")) {
+            notifyCallError();
+            return;
+        }
         setStatus("Calling to " + s);
     }
 
-
-    @FXML
-    void cmdFinishCallPressed(ActionEvent event) {
-        audio.StopListening();
-        audio.StopTalking();
+    void hangupCall() {
         setStatus("Call finished");
         srv.doCommand("call_hangup");
-        srv.setHasBeenTalking(false);
+
         txtCallTo.setDisable(false);
         cmdCall.setDisable(false);
         cmdFinishCall.setVisible(false);
+
+    }
+
+    @FXML
+    void cmdFinishCallPressed(ActionEvent event) {
+
+        hangupCall();
+
+        audio.StopListening();
+        audio.StopTalking();
+
+        srv.setHasBeenTalking(false);
+
         launchedSound = false;
     }
 }

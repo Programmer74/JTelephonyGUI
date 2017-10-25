@@ -56,9 +56,8 @@ public class LoginController {
     private void updateServerIP() {
         String ip = "";
         try {
-            ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
-            //ip = "146.185.142.134";
-            //ip = "localhost";
+            //ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
+            ip = "localhost";
             while(txtServerIP == null) {Thread.yield();}
             txtServerIP.setText(ip);
             //txtServerIP.setDisable(true);
