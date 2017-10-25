@@ -96,6 +96,7 @@ public class Audio {
         }
         catch (Exception ex) {
             format = null;
+            System.out.println("AudioConstructor: " + ex.toString());
             ex.printStackTrace();
             MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
         }
@@ -156,6 +157,7 @@ public class Audio {
         if (DEBUG) System.out.println("Talking thread started");
     }
     public void StopTalking() {
+        if (isTalking == false) return;
         isTalking = false;
         try {
             talkingThread.join();
@@ -179,7 +181,9 @@ public class Audio {
             speakers.start();
         }
         catch (Exception ex) {
-            if (DEBUG) System.out.println(ex.toString());
+            if (DEBUG) {
+                System.out.println("Listen: " + ex.toString());
+            }
             ex.printStackTrace();
             MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
             isListening = false;
@@ -215,14 +219,14 @@ public class Audio {
         listeningThread.start();
     }
     public void StopListening() {
-
+        if (isListening == false) return;
         isListening = false;
         try {
 
             listeningThread.join();
         }
         catch (Exception ex) {
-            if (DEBUG) System.out.println(ex.toString());
+            if (DEBUG) System.out.println("StopListening: " + ex.toString());
         };
 
         listeningThread = null;

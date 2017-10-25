@@ -22,8 +22,9 @@ public class Networking {
         try {
             socket = new DatagramSocket();
         } catch (Exception ex) {
-            System.out.println(ex.toString());
-            return; }
+            System.out.println("Networking: " + ex.toString());
+            return;
+        }
         this.serverIp = serverIp;
         this.serverPort = serverPort;
 
@@ -48,7 +49,10 @@ public class Networking {
             return 0;
         }
         catch (Exception ex) {
-            if (DEBUG) { System.out.println(ex.toString()); ex.printStackTrace(); }
+            if (DEBUG) {
+                System.out.println("SendVoicePacket: " + ex.toString());
+                ex.printStackTrace();
+            }
             return -1;
         }
     }
@@ -73,6 +77,7 @@ public class Networking {
             return 0;
         }
         catch (Exception ex) {
+            System.out.println("ReceiveVoicePacket: " + ex.toString());
             return -1;
         }
     }
