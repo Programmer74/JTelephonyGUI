@@ -54,6 +54,8 @@ public class MainController {
     @FXML private TextFlow tfUser;
     @FXML private TextFlow tfMe;
 
+    @FXML private TextArea txtMessageHistory;
+    @FXML private TextArea txtMessageInput;
 
     private boolean isWaitingAnswer = false;
     private boolean launchedSound = false;
@@ -229,6 +231,7 @@ public class MainController {
                         txtCallTo.setText(new_val);
                         cmdCall.setDisable(false);
                         fillUserInfo(tfUser, new_val);
+                        updateMessageHistory(new_val);
                     }
                 });
     }
@@ -251,6 +254,8 @@ public class MainController {
         th.start();
 
     }
+
+    int updateClientsCounter = 0;
 
     //MAIN STATUS THREAD
     Thread statusThread = new Thread(new Runnable() {
@@ -338,12 +343,18 @@ public class MainController {
                                 notifyNotAcceptedCall();
                             }
                         }
-
+                        if (cmd.equals("has") && arg.equals("incoming_messages")) {
+                            updateMessageHistory(txtCallTo.getText());
+                        }
                     }
-                    updateClients();
+                    updateClientsCounter++;
+                    if (updateClientsCounter == 10) {
+                        updateClients();
+                        updateClientsCounter = 1;
+                    }
                     // try {serverMutex.unlock(); } catch (Exception ex) {}
                     Thread.yield();
-                    Thread.sleep(1000);
+                    Thread.sleep(200);
                 } catch (Exception ex) {
                     System.out.println("StatusThread: " + ex.toString());
                     ex.printStackTrace();
@@ -403,5 +414,28 @@ public class MainController {
         srv.setHasBeenTalking(false);
 
         launchedSound = false;
+    }
+
+    void updateMessageHistory(String nickname) {
+        String rawhist = srv.doCommand("getmsg", nickname);
+        String from;
+        String msg;
+        String history = "";
+        for (String histentry : rawhist.split(";")) {
+            if (histentry.equals("")) continue;
+            from = histentry.split(":")[0];
+            msg = Utils.Base64Decode(histentry.split(":")[1]);
+            history = "<" + from + "> : " + msg + "\n" + history;
+        }
+        txtMessageHistory.setText(history);
+    }
+
+    @FXML
+    void cmdSendMessagePressed(ActionEvent event) {
+        if (txtMessageInput.getText().equals("")) return;
+        if (txtCallTo.getText().equals("")) return;
+        srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()));
+        updateMessageHistory(txtCallTo.getText());
+        txtMessageInput.setText("");
     }
 }

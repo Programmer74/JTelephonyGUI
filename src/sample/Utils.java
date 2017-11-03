@@ -1,6 +1,7 @@
 package sample;
 
 import java.security.MessageDigest;
+import java.util.Base64;
 
 public class Utils {
     public static String stringToMD5(String input) {
@@ -17,5 +18,13 @@ public class Utils {
         } catch (Exception ex) {
             return "";
         }
+    }
+    public static String Base64Encode(String input) {
+        byte[] encodedBytes = Base64.getEncoder().encode(input.getBytes());
+        return new String(encodedBytes);
+    }
+    public static String Base64Decode(String input) {
+        byte[] encodedBytes = Base64.getDecoder().decode(input.getBytes());
+        return new String(encodedBytes);
     }
 }
