@@ -72,7 +72,7 @@ public class LoginController {
             fxmlLoader.setLocation(getClass().getResource("main.fxml"));
             Stage stage = new Stage();
             stage.setTitle("JT");
-            stage.setScene(new Scene(fxmlLoader.load(), 300, 300));
+            stage.setScene(new Scene(fxmlLoader.load(), 800, 480));
 
             // Hide this current window (if this is what you want)
             ((Node)(event.getSource())).getScene().getWindow().hide();
@@ -88,6 +88,7 @@ public class LoginController {
             if (mc.getSrv().isConnected()) {
                 stage.show();
                 mc.doConnectSuccess();
+
             } else {
                 MessageBoxes.showCriticalErrorAlert("Cannot connect to server.\nTry again later.", "Error");
             }

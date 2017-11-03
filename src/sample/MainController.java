@@ -12,6 +12,9 @@ import javafx.scene.control.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,6 +51,10 @@ public class MainController {
 
     @FXML private ListView<String> lbUsersOnline;
 
+    @FXML private TextFlow tfUser;
+    @FXML private TextFlow tfMe;
+
+
     private boolean isWaitingAnswer = false;
     private boolean launchedSound = false;
     private int callWaitCounter = 0;
@@ -57,9 +64,20 @@ public class MainController {
     public MainController() {
         Thread t = new Thread(() -> {
             while(!MainController.formShown) Thread.yield();
-            //updateServerIP();
         });
         t.start();
+    }
+
+    private void formLoad() {
+
+        Text text1 = new Text("Hello\n");
+        text1.setFont(Font.font("Helvetica", 16));
+        Text text2 = new Text("World");
+        text2.setFont(Font.font("Helvetica", 12));
+        tfUser.getChildren().addAll(text1, text2);
+        Text text3 = new Text("You");
+        text3.setFont(Font.font("Helvetica", 12));
+        tfMe.getChildren().addAll(text3);
     }
 
     public static String getCurrentDate() {
@@ -327,6 +345,7 @@ public class MainController {
         statusThread.start();
         audio.nwConnection.sendVoicePacket(new VoicePacket(audio.getMyID(), 0, 0, new byte[3]));
 
+        formLoad();
     }
 
     @FXML
