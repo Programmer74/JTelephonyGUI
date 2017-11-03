@@ -31,7 +31,10 @@
             <TextFlow fx:id="tfUser" layoutX="14.0" layoutY="20.0" prefHeight="63.0" prefWidth="190.0" />
             <TextFlow fx:id="tfMe" layoutX="592.0" layoutY="14.0" prefHeight="63.0" prefWidth="190.0" />
             <Label layoutX="591.0" layoutY="225.0" text="History:" />
-            <Label layoutX="238.0" layoutY="38.0" text="TODO: useful stuff here" />
+            <Label layoutX="238.0" layoutY="31.0" text="TODO: useful stuff here" />
+            <TextArea fx:id="txtMessageHistory" editable="false" layoutX="238.0" layoutY="64.0" prefHeight="309.0" prefWidth="338.0" text="Dialog history goes here" />
+            <TextArea fx:id="txtMessageInput" layoutX="238.0" layoutY="385.0" prefHeight="55.0" prefWidth="271.0" promptText="Type message here" />
+            <Button fx:id="cmdSendMessage" layoutX="513.0" layoutY="385.0" mnemonicParsing="false" onAction="#cmdSendMessagePressed" prefHeight="25.0" prefWidth="63.0" text="Send" />
          </children>
       </Pane>
    </children>
