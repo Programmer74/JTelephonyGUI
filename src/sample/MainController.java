@@ -68,16 +68,28 @@ public class MainController {
         t.start();
     }
 
+    private void fillUserInfo(TextFlow tf, String nickname) {
+        String userInfo[] = srv.doCommand("info", nickname).split(":");
+
+        Text login = new Text(userInfo[0] + "\n");
+        login.setFont(Font.font("Helvetica", 20));
+        Text names = new Text(userInfo[1] + " " + userInfo[2] + "\n");
+        names.setFont(Font.font("Helvetica", 16));
+        Text city = new Text(userInfo[3]);
+        city.setFont(Font.font("Helvetica", 12));
+        tf.getChildren().clear();
+        tf.getChildren().addAll(login, names, city);
+    }
+
     private void formLoad() {
 
-        Text text1 = new Text("Hello\n");
+        Text text1 = new Text("User info\n");
         text1.setFont(Font.font("Helvetica", 16));
-        Text text2 = new Text("World");
+        Text text2 = new Text("goes here");
         text2.setFont(Font.font("Helvetica", 12));
         tfUser.getChildren().addAll(text1, text2);
-        Text text3 = new Text("You");
-        text3.setFont(Font.font("Helvetica", 12));
-        tfMe.getChildren().addAll(text3);
+
+        fillUserInfo(tfMe, "!!me");
     }
 
     public static String getCurrentDate() {
@@ -211,8 +223,12 @@ public class MainController {
                 new ChangeListener<String>() {
                     public void changed(ObservableValue<? extends String> ov,
                                         String old_val, String new_val) {
-                        //System.out.println(new_val);
+                        if (new_val == null) return;
+                        if (new_val.equals(old_val)) return;
+                        if (txtCallTo.getText().equals(new_val)) return;
                         txtCallTo.setText(new_val);
+                        cmdCall.setDisable(false);
+                        fillUserInfo(tfUser, new_val);
                     }
                 });
     }
