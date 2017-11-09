@@ -92,9 +92,12 @@ public class ServerInteraction {
 
     public String doCommand(String command, String arg) {
         try {
+            outputs.flush();
             outputs.writeUTF(command + " " + arg);
-
+            outputs.flush();
+            //System.out.println("wrote out " + command + " : " + arg);
             String ans = inputs.readUTF();
+
             //System.out.println("cmd: " + command + "(" + arg + ")" + " reply: " + ans);
             return ans;
         } catch (Exception ex) {

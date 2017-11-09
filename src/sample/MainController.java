@@ -1,6 +1,5 @@
 package sample;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -66,21 +65,35 @@ public class MainController {
     public MainController() {
         Thread t = new Thread(() -> {
             while(!MainController.formShown) Thread.yield();
+            updateClientsNoWrap();
         });
         t.start();
     }
 
-    private void fillUserInfo(TextFlow tf, String nickname) {
-        String userInfo[] = srv.doCommand("info", nickname).split(":");
+    private void updateUserInfoUI(TextFlow tf, String nickname) {
+        try {
+            String userInfo[] = srv.doCommand("info", nickname).split(":");
 
-        Text login = new Text(userInfo[0] + "\n");
-        login.setFont(Font.font("Helvetica", 20));
-        Text names = new Text(userInfo[1] + " " + userInfo[2] + "\n");
-        names.setFont(Font.font("Helvetica", 16));
-        Text city = new Text(userInfo[3]);
-        city.setFont(Font.font("Helvetica", 12));
-        tf.getChildren().clear();
-        tf.getChildren().addAll(login, names, city);
+            Text login = new Text(userInfo[0] + "\n");
+            login.setFont(Font.font("Helvetica", 20));
+            Text names = new Text(userInfo[1] + " " + userInfo[2] + "\n");
+            names.setFont(Font.font("Helvetica", 16));
+            Text city = new Text(userInfo[3] + "\n");
+            city.setFont(Font.font("Helvetica", 12));
+            Text status = new Text(userInfo[4]);
+            status.setFont(Font.font("Helvetica", 10));
+            tf.getChildren().clear();
+            tf.getChildren().addAll(login, names, city, status);
+
+            if (userInfo[4].equals("online") && !nickname.equals("!!me")) {
+                cmdCall.setDisable(false);
+            } else {
+                cmdCall.setDisable(true);
+            }
+
+        } catch (Exception ex) {
+
+        }
     }
 
     private void formLoad() {
@@ -91,7 +104,7 @@ public class MainController {
         text2.setFont(Font.font("Helvetica", 12));
         tfUser.getChildren().addAll(text1, text2);
 
-        fillUserInfo(tfMe, "!!me");
+        updateUserInfoUI(tfMe, "!!me");
     }
 
     public static String getCurrentDate() {
@@ -230,7 +243,7 @@ public class MainController {
                         if (txtCallTo.getText().equals(new_val)) return;
                         txtCallTo.setText(new_val);
                         cmdCall.setDisable(false);
-                        fillUserInfo(tfUser, new_val);
+                        updateUserInfoUI(tfUser, new_val);
                         updateMessageHistory(new_val);
                     }
                 });
@@ -348,10 +361,10 @@ public class MainController {
                         }
                     }
                     updateClientsCounter++;
-                    if (updateClientsCounter == 10) {
+                    //if (updateClientsCounter == 10) {
                         updateClients();
                         updateClientsCounter = 1;
-                    }
+                    //}
                     // try {serverMutex.unlock(); } catch (Exception ex) {}
                     Thread.yield();
                     Thread.sleep(200);
