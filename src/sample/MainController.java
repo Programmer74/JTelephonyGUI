@@ -14,7 +14,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebView;
+import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
+import org.codefx.libfx.control.webview.WebViews;
 
+import javax.swing.event.HyperlinkEvent;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,7 +58,7 @@ public class MainController {
     @FXML private TextFlow tfUser;
     @FXML private TextFlow tfMe;
 
-    @FXML private TextArea txtMessageHistory;
+    @FXML private WebView wvMessageHistory;
     @FXML private TextArea txtMessageInput;
 
     private boolean isWaitingAnswer = false;
@@ -105,6 +110,15 @@ public class MainController {
         tfUser.getChildren().addAll(text1, text2);
 
         updateUserInfoUI(tfMe, "!!me");
+
+        WebViewHyperlinkListener eventPrintingListener = event -> {
+            if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                //System.out.println(WebViews.hyperlinkEventToString(event));
+                webviewLinkFired(event.getURL().toString(), event.getDescription());
+            }
+            return false;
+        };
+        WebViews.addHyperlinkListener(wvMessageHistory, eventPrintingListener);
     }
 
     public static String getCurrentDate() {
@@ -433,21 +447,39 @@ public class MainController {
         String rawhist = srv.doCommand("getmsg", nickname);
         String from;
         String msg;
-        String history = "";
         String attachment = "";
-        for (String histentry : rawhist.split(";")) {
+
+        StringBuilder historySb = new StringBuilder();
+
+        String histentry;
+        String[] histentries = rawhist.split(";");
+
+        for (int i = histentries.length - 1; i >= 0; i--) {
+            histentry = histentries[i];
             if (histentry.equals("")) continue;
             String[] msgentry = histentry.split(":");
             from = msgentry[0];
             msg = Utils.Base64Decode(msgentry[1]);
             attachment = Utils.Base64Decode(msgentry[2]);
 
-            history = "<" + from + "> : " + msg + "\n" + history;
+            historySb.append("<p>");
+            historySb.append("<b>").append(from).append("</b>: ");
+            historySb.append(msg);
+            if (!attachment.equals("null")) {
+                if (attachment.charAt(0) == '-') {
+                    historySb.append("<br><a href=").append("http://localhost:9000/").append(attachment).append(">Image</a>");
+                } else {
+                    historySb.append("<br><a href=").append(attachment).append(">Document</a>");
+                }
+            }
+            historySb.append("</p>\n");
+            /*
+            history = "[" + from + "] : " + msg + "\n" + history;
             if (!attachment.equals("null")) {
                 history = from + " sent " + attachment + "\n" + history;
-            }
+            }*/
         }
-        txtMessageHistory.setText(history);
+        wvMessageHistory.getEngine().loadContent(historySb.toString());
     }
 
     @FXML
@@ -457,5 +489,24 @@ public class MainController {
         srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()));
         updateMessageHistory(txtCallTo.getText());
         txtMessageInput.setText("");
+    }
+
+    void webviewLinkFired(String url, String description) {
+        if (description.equals("Image")) {
+            //data:image/jpeg;base64,
+            try {
+                String base64image = srv.doCommand("getimg", url.split("[/]")[3].substring(1));
+                //String base64image = srv.doCommand("getimg", url);
+                new ProcessBuilder("x-www-browser", "data:image/jpeg;base64," + base64image).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                new ProcessBuilder("x-www-browser", url).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

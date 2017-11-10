@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="javafx" name="JTelephonyGUI">
+  <artifact type="javafx" build-on-make="true" name="JTelephonyGUI">
     <output-path>$PROJECT_DIR$/out/artifacts/JTelephonyGUI</output-path>
     <properties id="javafx-properties">
       <options>
@@ -15,6 +15,7 @@
       <element id="archive" name="JTelephonyGUI.jar">
         <element id="module-output" name="JTelephonyGUI" />
       </element>
+      <element id="library" level="project" name="org.codefx.libfx:LibFX:0.3.0" />
     </root>
   </artifact>
 </component>
