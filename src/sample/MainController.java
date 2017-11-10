@@ -434,11 +434,18 @@ public class MainController {
         String from;
         String msg;
         String history = "";
+        String attachment = "";
         for (String histentry : rawhist.split(";")) {
             if (histentry.equals("")) continue;
-            from = histentry.split(":")[0];
-            msg = Utils.Base64Decode(histentry.split(":")[1]);
+            String[] msgentry = histentry.split(":");
+            from = msgentry[0];
+            msg = Utils.Base64Decode(msgentry[1]);
+            attachment = Utils.Base64Decode(msgentry[2]);
+
             history = "<" + from + "> : " + msg + "\n" + history;
+            if (!attachment.equals("null")) {
+                history = from + " sent " + attachment + "\n" + history;
+            }
         }
         txtMessageHistory.setText(history);
     }
