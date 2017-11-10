@@ -65,6 +65,7 @@ public class ServerInteraction {
         try {
 
             socket = new Socket(InetAddress.getByName(ip), port);
+            socket.setTcpNoDelay(true);
             //socket.setSoTimeout(5000);
             inputs = new DataInputStream(socket.getInputStream());
             outputs = new DataOutputStream(socket.getOutputStream());
