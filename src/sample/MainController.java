@@ -31,6 +31,8 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class MainController {
@@ -528,9 +530,12 @@ public class MainController {
             historySb.append(msg);
             if (!attachment.equals("null")) {
                 if (attachment.charAt(0) == '-') {
-                    historySb.append("<br><a href=").append("http://localhost:9000/").append(attachment).append(">Image</a>");
+                    historySb.append("<br><a href=").append("http://localhost:9000/").append(attachment).append(">");
+                    //historySb.append("Image");
+                    historySb.append("<img src=\"file://").append(downloadImageAndGetPath(attachment.substring(1))).append("\" width = 64px alt=Image />");
+                    historySb.append("</a>");
                 } else {
-                    historySb.append("<br><a href=").append(attachment).append(">Document</a>");
+                    historySb.append("<br><a href=").append(attachment).append(">Document: ").append(attachment).append("</a>");
                 }
             }
             historySb.append("</p>\n");
@@ -577,16 +582,34 @@ public class MainController {
         txtMessageInput.setText("");
     }
 
+    private Map<Integer, String> imageToPath = new HashMap<>();
+
+    private String downloadImageAndGetPath(String strimageid) {
+        try {
+            Integer imageid = Integer.parseInt(strimageid);
+            if (imageToPath.get(imageid) != null) return imageToPath.get(imageid);
+            byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", imageid.toString());
+            String imagepath = System.getProperty("java.io.tmpdir") + "/" + imageid + ".jpg";
+            FileOutputStream fos = new FileOutputStream(imagepath);
+            fos.write(imagebytes);
+            fos.close();
+            imageToPath.put(imageid, imagepath);
+            return imagepath;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     void webviewLinkFired(String url, String description) {
-        if (description.equals("Image")) {
+        if (description.equals("")) {
             //data:image/jpeg;base64,
             //System.getProperty("java.io.tmpdir")
             try {
-                byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", url.split("[/]")[3].substring(1));
-                String imagepath = System.getProperty("java.io.tmpdir") + "/" + url.split("[/]")[3] + ".jpg";
-                FileOutputStream fos = new FileOutputStream(imagepath);
-                fos.write(imagebytes);
-                fos.close();
+
+                String imageid = url.split("[/]")[3].substring(1);
+
+                String imagepath = downloadImageAndGetPath(imageid);
+
                 new ProcessBuilder("x-www-browser", "file://" + imagepath).start();
                 //new ProcessBuilder("x-www-browser", "data:image/jpeg;base64," + base64image).start();
             } catch (IOException e) {
