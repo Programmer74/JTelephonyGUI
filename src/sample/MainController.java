@@ -12,6 +12,10 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 
 import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -26,6 +30,7 @@ import org.codefx.libfx.control.webview.WebViews;
 
 import javax.imageio.ImageIO;
 import javax.swing.event.HyperlinkEvent;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.DateFormat;
@@ -565,6 +570,7 @@ public class MainController {
         }
         historySb.append("</body>");
         historySb.append("</html>");
+        //System.out.println(historySb.toString());
         Platform.runLater(new Runnable() {
             @Override public void run() {
                 wvMessageHistory.getEngine().loadContent(historySb.toString());
@@ -613,13 +619,22 @@ public class MainController {
     private String downloadImageAndGetPath(String strimageid) {
         try {
             Integer imageid = Integer.parseInt(strimageid);
-            if (imageToPath.get(imageid) != null) return imageToPath.get(imageid);
+            if (imageToPath.get(imageid) != null) {
+                System.out.println(imageToPath.get(imageid));
+                return imageToPath.get(imageid);
+            }
             byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", imageid.toString());
-            String imagepath = System.getProperty("java.io.tmpdir") + "/" + imageid + ".jpg";
+            String imagepath = "";
+            if (System.getProperty("os.name").equals("Linux")) {
+                imagepath = System.getProperty("java.io.tmpdir") + "/" + imageid + ".jpg";
+            } else {
+                imagepath = System.getProperty("java.io.tmpdir").replace("\\", "/") + imageid + ".jpg";
+            }
             FileOutputStream fos = new FileOutputStream(imagepath);
             fos.write(imagebytes);
             fos.close();
             imageToPath.put(imageid, imagepath);
+            System.out.println(imagepath) ;
             return imagepath;
         } catch (Exception ex) {
             return null;
@@ -638,6 +653,8 @@ public class MainController {
 
                 if (System.getProperty("os.name").equals("Linux")) {
                     Runtime.getRuntime().exec("xdg-open " + imagepath);
+                } else if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+                    Desktop.getDesktop().open(new File(imagepath));
                 } else {
                     new ProcessBuilder("x-www-browser", "file://" + imagepath).start();
                 }
