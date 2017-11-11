@@ -299,7 +299,12 @@ public class MainController {
                     String subans[] = serverAnswer.split(";");
                     for (int i = 0; i < subans.length; i++) {
                         String cmd = subans[i].split(" ")[0];
-                        String arg = subans[i].split(" ")[1];
+                        String arg;
+                        try {
+                            arg = subans[i].split(" ")[1];
+                        } catch (Exception ex) {
+                            arg = "dummy";
+                        }
 
                         //System.out.println(cmd + "(" + arg + ")");
 
