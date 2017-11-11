@@ -2,11 +2,16 @@ package sample;
 
 import sun.awt.Mutex;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.Buffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +100,7 @@ public class ServerInteraction {
         }
     }
 
-    byte[] buf = new byte[1024 * 1024];
+    byte[] buf = new byte[8 * 1024 * 1024];
     int buf_len;
 
     public byte[] doBinaryAnswerCommand(String command, String arg) {
@@ -126,6 +131,18 @@ public class ServerInteraction {
         synchronized (outputs) {
             try {
                 doCommand("sendimg");
+
+                BufferedImage bufferedImage = ImageIO.read(new File(filepath));
+
+                // create a blank, RGB, same width and height, and a white background
+                BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
+                        bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+
+                // write to jpeg file
+                filepath = System.getProperty("java.io.tmpdir") + "/upload.jpg";
+                ImageIO.write(newBufferedImage, "jpg", new File(filepath));
+
                 Path path = Paths.get(filepath);
                 byte[] data = Files.readAllBytes(path);
                 outputs.writeInt(data.length);

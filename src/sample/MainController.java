@@ -550,7 +550,7 @@ public class MainController {
                 if (attachment.charAt(0) == '-') {
                     historySb.append("<br><a href=").append("http://localhost:9000/").append(attachment).append(">");
                     //historySb.append("Image");
-                    historySb.append("<img src=\"file://").append(downloadImageAndGetPath(attachment.substring(1))).append("\" width = 64px alt=Image />");
+                    historySb.append("<img src=\"file://").append(downloadImageAndGetPath(attachment.substring(1))).append("\" width = 320px alt=Image />");
                     historySb.append("</a>");
                 } else {
                     historySb.append("<br><a href=").append(attachment).append(">Document: ").append(attachment).append("</a>");
@@ -587,12 +587,20 @@ public class MainController {
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open File");
+        FileChooser.ExtensionFilter jpgFilter = new FileChooser.ExtensionFilter("JPEG files (*.jpg)", "*.jpg");
+        FileChooser.ExtensionFilter pngFilter = new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png");
+        FileChooser.ExtensionFilter gifFilter = new FileChooser.ExtensionFilter("GIF files (*.gif)", "*.gif");
+        FileChooser.ExtensionFilter bmpFilter = new FileChooser.ExtensionFilter("BMP files (*.bmp)", "*.bmp");
+        chooser.getExtensionFilters().addAll(jpgFilter, pngFilter, gifFilter, bmpFilter);
 
         File file = chooser.showOpenDialog(new Stage());
         if (file == null) return;
 
         Integer id = srv.doSendImage(file.toString());
-        if (id <= 0) return;
+        if (id <= 0) {
+            MessageBoxes.showAlert("An error while attaching image", "Img info");
+            return;
+        }
         if (txtMessageInput.getText().equals("")) txtMessageInput.setText(" ");
         srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()) + ":" + id);
 
