@@ -94,13 +94,24 @@ public class LoginController {
             Stage stage = new Stage();
             stage.setTitle("JT");
             stage.setScene(new Scene(fxmlLoader.load(), 800, 480));
+            stage.setMinWidth(800);
+            stage.setMinHeight(480);
 
             // Hide this current window (if this is what you want)
             ((Node)(event.getSource())).getScene().getWindow().hide();
 
             MainController mc = (MainController)fxmlLoader.getController();
             stage.setOnCloseRequest(e -> {Platform.exit(); System.exit(0);});
-
+            final ChangeListener<Number> listener = new ChangeListener<Number>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, final Number newValue)
+                {
+                    mc.formResize(stage.widthProperty().intValue(), stage.heightProperty().intValue());
+                }
+            };
+            stage.widthProperty().addListener(listener);
+            stage.heightProperty().addListener(listener);
             String s2 = txtServerIP.getText();
             String nick = txtNickname.getText();
             String pass = txtPassword.getText();

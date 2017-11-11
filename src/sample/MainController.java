@@ -51,6 +51,7 @@ public class MainController {
     @FXML private Button cmdCall;
     @FXML private Button cmdConnect;
     @FXML private Button cmdFinishCall;
+    @FXML private Button cmdSendImage;
 
     @FXML private TextField txtCallTo;
     @FXML private TextField txtServerIP;
@@ -61,6 +62,8 @@ public class MainController {
     @FXML private Label lblStatus;
 
     @FXML private Pane paneMain;
+    @FXML private Pane leftPane;
+    @FXML private Pane rightPane;
     @FXML private Pane paneConnect;
 
     @FXML private ListView<String> lbUsersOnline;
@@ -132,6 +135,8 @@ public class MainController {
 
     private void formLoad() {
 
+        formShown = true;
+
         Text text1 = new Text("User info\n");
         text1.setFont(Font.font("Helvetica", 16));
         Text text2 = new Text("goes here");
@@ -162,6 +167,19 @@ public class MainController {
                 }
             }
         });
+    }
+
+    public void formResize(int width, int height) {
+        if (!MainController.formShown) return;
+        System.out.println(width + ":" + height);
+        paneMain.prefWidthProperty().set(width - 400);
+        paneMain.prefHeightProperty().set(height - 10);
+        wvMessageHistory.prefWidthProperty().set(paneMain.prefWidthProperty().get() - wvMessageHistory.layoutXProperty().get() * 2);
+        wvMessageHistory.prefHeightProperty().set(paneMain.prefHeightProperty().get() - 100);
+        txtMessageInput.layoutYProperty().set(height - txtMessageInput.prefHeightProperty().get() - 31);
+        txtMessageInput.prefWidthProperty().set(width - 460);
+        cmdSendImage.layoutYProperty().set(txtMessageInput.layoutYProperty().get() + 2);
+        cmdSendImage.layoutXProperty().set(txtMessageInput.prefWidthProperty().get() + 6);
     }
 
     public static String getCurrentDate() {
