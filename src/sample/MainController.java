@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 
 import javafx.event.ActionEvent;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -68,7 +69,7 @@ public class MainController {
     private boolean isWaitingAnswer = false;
     private boolean launchedSound = false;
     private int callWaitCounter = 0;
-    private final int callWaitTime = 30;
+    private final int callWaitTime = 300;
     private String currentStatus = "";
 
     public MainController() {
@@ -142,6 +143,20 @@ public class MainController {
             return false;
         };
         WebViews.addHyperlinkListener(wvMessageHistory, eventPrintingListener);
+
+        txtMessageInput.addEventFilter(KeyEvent.ANY, evt -> {
+            if (evt.getEventType() == KeyEvent.KEY_PRESSED) {
+                //txtMessageInput.setText(evt.getCode().toString());
+                if (evt.getCode().toString().equals("ENTER")) {
+                    if (!evt.isShiftDown()) {
+                        cmdSendMessagePressed(null);
+                        evt.consume();
+                    } else {
+                        txtMessageInput.appendText(System.getProperty("line.separator"));
+                    }
+                }
+            }
+        });
     }
 
     public static String getCurrentDate() {
@@ -502,8 +517,11 @@ public class MainController {
 
             historySb.append("<p>");
             historySb.append("<b>").append(from).append("</b>: ");
+
             msg = msg.replaceAll("[<]", "&lt;");
             msg = msg.replaceAll("[>]", "&gt;");
+            msg = msg.replaceAll("\n|\r\n|\n\r|\r", "<br>");
+
             historySb.append(msg);
             if (!attachment.equals("null")) {
                 if (attachment.charAt(0) == '-') {
