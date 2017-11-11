@@ -7,12 +7,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -42,8 +45,26 @@ public class LoginController {
         Thread t = new Thread(() -> {
             while(!LoginController.formShown) Thread.yield();
             updateServerIP();
+            formLoad();
         });
         t.start();
+    }
+
+    private void formLoad() {
+        EventHandler<KeyEvent> eh = new EventHandler<KeyEvent>()
+        {
+            @Override
+            public void handle(KeyEvent ke)
+            {
+                if (ke.getCode().equals(KeyCode.ENTER))
+                {
+                    cmdConnect.fire();
+                }
+            }
+        };
+        txtServerIP.setOnKeyPressed(eh);
+        txtNickname.setOnKeyPressed(eh);
+        txtPassword.setOnKeyPressed(eh);
     }
 
     public static String getCurrentDate() {
