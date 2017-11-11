@@ -6,10 +6,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import javafx.event.ActionEvent;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -18,10 +20,10 @@ import javafx.scene.web.WebView;
 import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
 import org.codefx.libfx.control.webview.WebViews;
 
+import javax.imageio.ImageIO;
 import javax.swing.event.HyperlinkEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,14 +84,33 @@ public class MainController {
             String userInfo[] = srv.doCommand("info", nickname).split(":");
 
             Text login = new Text(userInfo[0] + "\n");
-            login.setFont(Font.font("Helvetica", 20));
+            login.setFont(Font.font("Helvetica", 24));
             Text names = new Text(userInfo[1] + " " + userInfo[2] + "\n");
             names.setFont(Font.font("Helvetica", 16));
             Text city = new Text(userInfo[3] + "\n");
             city.setFont(Font.font("Helvetica", 12));
             Text status = new Text(userInfo[4]);
             status.setFont(Font.font("Helvetica", 10));
+
+
             tf.getChildren().clear();
+            if (!userInfo[5].equals("null")) {
+
+                BufferedImage bufferedImage=null;
+                try {
+                    InputStream inputStream = new ByteArrayInputStream(srv.doBinaryAnswerCommand("getimg", userInfo[5]));
+                    bufferedImage = ImageIO.read(inputStream);
+                    //bufferedImage = Utils.resizeBufferedImage(bufferedImage, 64, 64);
+                    ImageView imageView = new ImageView(SwingFXUtils.toFXImage(bufferedImage, null));
+                    imageView.setFitHeight(24);
+                    imageView.setFitWidth(24);
+                    tf.getChildren().add(imageView);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+            }
+
             tf.getChildren().addAll(login, names, city, status);
 
             if (userInfo[4].equals("online") && !nickname.equals("!!me")) {
@@ -471,6 +492,8 @@ public class MainController {
 
             historySb.append("<p>");
             historySb.append("<b>").append(from).append("</b>: ");
+            msg = msg.replaceAll("[<]", "&lt;");
+            msg = msg.replaceAll("[>]", "&gt;");
             historySb.append(msg);
             if (!attachment.equals("null")) {
                 if (attachment.charAt(0) == '-') {
@@ -486,7 +509,12 @@ public class MainController {
                 history = from + " sent " + attachment + "\n" + history;
             }*/
         }
-        wvMessageHistory.getEngine().loadContent(historySb.toString());
+        Platform.runLater(new Runnable() {
+            @Override public void run() {
+                wvMessageHistory.getEngine().loadContent(historySb.toString());
+            }
+        });
+
     }
 
     @FXML
