@@ -636,7 +636,11 @@ public class MainController {
 
                 String imagepath = downloadImageAndGetPath(imageid);
 
-                new ProcessBuilder("x-www-browser", "file://" + imagepath).start();
+                if (System.getProperty("os.name").equals("Linux")) {
+                    Runtime.getRuntime().exec("xdg-open " + imagepath);
+                } else {
+                    new ProcessBuilder("x-www-browser", "file://" + imagepath).start();
+                }
                 //new ProcessBuilder("x-www-browser", "data:image/jpeg;base64," + base64image).start();
             } catch (IOException e) {
                 e.printStackTrace();
