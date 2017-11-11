@@ -479,6 +479,16 @@ public class MainController {
 
         StringBuilder historySb = new StringBuilder();
 
+        historySb.append("<html>");
+        historySb.append("<head>");
+        historySb.append("   <script language=\"javascript\" type=\"text/javascript\">");
+        historySb.append("       function toBottom(){");
+        historySb.append("           window.scrollTo(0, document.body.scrollHeight);");
+        historySb.append("       }");
+        historySb.append("   </script>");
+        historySb.append("</head>");
+        historySb.append("<body onload='toBottom()'>");
+
         String histentry;
         String[] histentries = rawhist.split(";");
 
@@ -509,6 +519,8 @@ public class MainController {
                 history = from + " sent " + attachment + "\n" + history;
             }*/
         }
+        historySb.append("</body>");
+        historySb.append("</html>");
         Platform.runLater(new Runnable() {
             @Override public void run() {
                 wvMessageHistory.getEngine().loadContent(historySb.toString());
