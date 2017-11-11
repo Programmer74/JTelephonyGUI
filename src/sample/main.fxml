@@ -33,8 +33,9 @@
             <TextFlow fx:id="tfMe" layoutX="592.0" layoutY="14.0" prefHeight="63.0" prefWidth="190.0" />
             <Label layoutX="591.0" layoutY="225.0" text="History:" />
             <TextArea fx:id="txtMessageInput" layoutX="238.0" layoutY="402.0" prefHeight="55.0" prefWidth="271.0" promptText="Type message here" />
-            <Button fx:id="cmdSendMessage" layoutX="510.0" layoutY="402.0" mnemonicParsing="false" onAction="#cmdSendMessagePressed" prefHeight="25.0" prefWidth="63.0" text="Send" />
+            <Button fx:id="cmdSendMessage" layoutX="238.0" layoutY="369.0" mnemonicParsing="false" onAction="#cmdSendMessagePressed" prefHeight="25.0" prefWidth="63.0" text="Send" />
             <WebView fx:id="wvMessageHistory" layoutX="238.0" layoutY="24.0" prefHeight="370.0" prefWidth="335.0" />
+            <Button fx:id="cmdSendImage" layoutX="515.0" layoutY="402.0" mnemonicParsing="false" onAction="#cmdSendImagePressed" prefHeight="25.0" prefWidth="46.0" text="Img" />
          </children>
       </Pane>
    </children>
