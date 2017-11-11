@@ -7,6 +7,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
@@ -115,6 +118,27 @@ public class ServerInteraction {
                 isConnected = false;
                 MessageBoxes.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
                 return null;
+            }
+        }
+    }
+
+    public int doSendImage(String filepath) {
+        synchronized (outputs) {
+            try {
+                doCommand("sendimg");
+                Path path = Paths.get(filepath);
+                byte[] data = Files.readAllBytes(path);
+                outputs.writeInt(data.length);
+                outputs.write(data);
+                outputs.flush();
+                buf_len = inputs.readInt();
+                inputs.readFully(buf, 0, buf_len);
+                String answer = new String(buf, 0, buf_len);
+                return Integer.parseInt(answer.split(":")[1]);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return -1;
             }
         }
     }

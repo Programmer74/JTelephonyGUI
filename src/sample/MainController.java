@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 
 import javafx.event.ActionEvent;
@@ -18,6 +19,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
 import org.codefx.libfx.control.webview.WebViews;
 
@@ -551,7 +554,25 @@ public class MainController {
     void cmdSendMessagePressed(ActionEvent event) {
         if (txtMessageInput.getText().equals("")) return;
         if (txtCallTo.getText().equals("")) return;
-        srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()));
+        srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()) + ":null");
+        updateMessageHistory(txtCallTo.getText());
+        txtMessageInput.setText("");
+    }
+
+    @FXML
+    void cmdSendImagePressed(ActionEvent event) {
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open File");
+
+        File file = chooser.showOpenDialog(new Stage());
+        if (file == null) return;
+
+        Integer id = srv.doSendImage(file.toString());
+        if (id <= 0) return;
+        if (txtMessageInput.getText().equals("")) txtMessageInput.setText(" ");
+        srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()) + ":" + id);
+
         updateMessageHistory(txtCallTo.getText());
         txtMessageInput.setText("");
     }
