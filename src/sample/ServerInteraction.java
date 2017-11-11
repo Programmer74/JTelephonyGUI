@@ -72,8 +72,8 @@ public class ServerInteraction {
 
             audio = new Audio(48000, 1, InetAddress.getByName(ip), 7002, 0);
 
-            outputs.writeUTF("nick " + nick);
-            String myIdStr = inputs.readUTF();
+            //outputs.writeUTF("nick " + nick);
+            String myIdStr = doCommand("nick", nick); //inputs.readUTF();
             myId = Integer.parseInt(myIdStr);
 
             if (myId < 0) {
@@ -91,21 +91,30 @@ public class ServerInteraction {
         }
     }
 
-    public String doCommand(String command, String arg) {
-        try {
-            outputs.flush();
-            outputs.writeUTF(command + " " + arg);
-            outputs.flush();
-            //System.out.println("wrote out " + command + " : " + arg);
-            String ans = inputs.readUTF();
+    byte[] buf = new byte[1024 * 1024];
+    int buf_len;
 
-            //System.out.println("cmd: " + command + "(" + arg + ")" + " reply: " + ans);
-            return ans;
-        } catch (Exception ex) {
-            System.err.println("In do command exception: " + ex.toString());
-            isConnected = false;
-            MessageBoxes.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
-            return "";
+    public String doCommand(String command, String arg) {
+        synchronized (outputs){
+            try {
+                String to_send = command + " " + arg;
+                outputs.writeInt(to_send.getBytes().length);
+                outputs.write(to_send.getBytes());
+                outputs.flush();
+                //System.out.println("wrote out " + command + " : " + arg);
+
+                buf_len = inputs.readInt();
+                inputs.readFully(buf, 0, buf_len);
+                String ans = new String(buf, 0, buf_len);
+
+                //System.out.println("cmd: " + command + "(" + arg + ")" + " reply: " + ans);
+                return ans;
+            } catch (Exception ex) {
+                System.err.println("In do command exception: " + ex.toString());
+                isConnected = false;
+                MessageBoxes.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
+                return "";
+            }
         }
     }
     public String doCommand(String command) { return doCommand(command, "dummy");}
