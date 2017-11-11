@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -94,7 +95,7 @@ public class ServerInteraction {
     byte[] buf = new byte[1024 * 1024];
     int buf_len;
 
-    public String doCommand(String command, String arg) {
+    public byte[] doBinaryAnswerCommand(String command, String arg) {
         synchronized (outputs){
             try {
                 String to_send = command + " " + arg;
@@ -105,17 +106,21 @@ public class ServerInteraction {
 
                 buf_len = inputs.readInt();
                 inputs.readFully(buf, 0, buf_len);
-                String ans = new String(buf, 0, buf_len);
+                //String ans = new String(buf, 0, buf_len);
 
                 //System.out.println("cmd: " + command + "(" + arg + ")" + " reply: " + ans);
-                return ans;
+                return Arrays.copyOfRange(buf, 0, buf_len);
             } catch (Exception ex) {
                 System.err.println("In do command exception: " + ex.toString());
                 isConnected = false;
                 MessageBoxes.showCriticalErrorAlert("Connection to server was unexpectedly closed.", "Server error");
-                return "";
+                return null;
             }
         }
+    }
+
+    public String doCommand(String command, String arg) {
+        return new String(doBinaryAnswerCommand(command, arg));
     }
     public String doCommand(String command) { return doCommand(command, "dummy");}
 }

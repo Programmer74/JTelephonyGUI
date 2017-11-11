@@ -19,6 +19,8 @@ import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
 import org.codefx.libfx.control.webview.WebViews;
 
 import javax.swing.event.HyperlinkEvent;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -499,10 +501,15 @@ public class MainController {
     void webviewLinkFired(String url, String description) {
         if (description.equals("Image")) {
             //data:image/jpeg;base64,
+            //System.getProperty("java.io.tmpdir")
             try {
-                String base64image = srv.doCommand("getimg", url.split("[/]")[3].substring(1));
-                //String base64image = srv.doCommand("getimg", url);
-                new ProcessBuilder("x-www-browser", "data:image/jpeg;base64," + base64image).start();
+                byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", url.split("[/]")[3].substring(1));
+                String imagepath = System.getProperty("java.io.tmpdir") + "/" + url.split("[/]")[3] + ".jpg";
+                FileOutputStream fos = new FileOutputStream(imagepath);
+                fos.write(imagebytes);
+                fos.close();
+                new ProcessBuilder("x-www-browser", "file://" + imagepath).start();
+                //new ProcessBuilder("x-www-browser", "data:image/jpeg;base64," + base64image).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
