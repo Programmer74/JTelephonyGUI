@@ -57,6 +57,7 @@ public class MainController {
     @FXML private Button cmdConnect;
     @FXML private Button cmdFinishCall;
     @FXML private Button cmdSendImage;
+    @FXML private Button cmdLogout;
 
     @FXML private TextField txtCallTo;
     @FXML private TextField txtServerIP;
@@ -612,6 +613,13 @@ public class MainController {
 
         updateMessageHistory(txtCallTo.getText());
         txtMessageInput.setText("");
+    }
+
+    @FXML
+    void cmdLogoutPressed(ActionEvent event) {
+        // Magic. Do not touch.
+        LoginController lc = new LoginController();
+        lc.invalidateTokenFileAndClose(false);
     }
 
     private Map<Integer, String> imageToPath = new HashMap<>();
