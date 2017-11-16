@@ -1,5 +1,9 @@
 package sample;
 
+import java.applet.Applet;
+import java.util.*;
+
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,16 +23,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Optional;
-import java.util.ResourceBundle;
 
 public class LoginController {
 
-
+    private String tokenString = null;
     public static boolean formShown = false;
 
     @FXML private Button cmdConnect;
@@ -40,6 +43,7 @@ public class LoginController {
 
     @FXML private Pane paneConnect;
 
+    private final String filePath = "token.dat";
 
     public LoginController() {
         Thread t = new Thread(() -> {
@@ -65,6 +69,16 @@ public class LoginController {
         txtServerIP.setOnKeyPressed(eh);
         txtNickname.setOnKeyPressed(eh);
         txtPassword.setOnKeyPressed(eh);
+
+        try {
+            String content = new Scanner(new File(filePath)).useDelimiter("\\Z").next();
+            tokenString = content;
+            Platform.runLater(() -> cmdConnect.fire());
+        } catch (IOException ex) {
+            tokenString = null;
+            System.out.println("No token file =(");
+        }
+
     }
 
     public static String getCurrentDate() {
@@ -83,6 +97,37 @@ public class LoginController {
             txtServerIP.setText(ip);
             //txtServerIP.setDisable(true);
         } catch (Exception ex ) {ex.printStackTrace();}
+    }
+
+    public void invalidateTokenFileAndClose(boolean rebootRequired) {
+        File file = new File(filePath);
+        file.delete();
+        if (rebootRequired) {
+            try {
+                final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+                final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+
+                /* is it a jar file? */
+                if (!currentJar.getName().endsWith(".jar"))
+                    return;
+
+                /* Build command: java -jar application.jar */
+                final ArrayList<String> command = new ArrayList<String>();
+                command.add(javaBin);
+                command.add("-jar");
+                command.add(currentJar.getPath());
+
+                final ProcessBuilder builder = new ProcessBuilder(command);
+                builder.start();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                System.exit(0);
+            }
+        } else {
+            System.exit(0);
+        }
     }
 
     @FXML
@@ -116,13 +161,35 @@ public class LoginController {
             String nick = txtNickname.getText();
             String pass = txtPassword.getText();
             System.out.println("CONNECT " + s2);
-            mc.getSrv().connect(s2, 7000, nick + ":" + Utils.stringToMD5(pass));
+
+            if (tokenString == null) {
+                mc.getSrv().connect(s2, 7000, nick + ":" + Utils.stringToMD5(pass));
+            } else {
+                mc.getSrv().connect(s2, 7000, nick + ":-" + tokenString);
+            }
+
             if (mc.getSrv().isConnected()) {
+
+                if (tokenString == null) {
+                    String achievedToken = mc.getSrv().doCommand("gettoken");
+
+                    try (PrintWriter out = new PrintWriter(filePath)) {
+                        System.out.println("Token " + achievedToken + " saved.");
+                        out.print(achievedToken);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return;
+                    }
+                }
+
                 stage.show();
                 mc.doConnectSuccess();
 
             } else {
                 MessageBoxes.showCriticalErrorAlert("Cannot connect to server.\nTry again later.", "Error");
+                if (tokenString != null) {
+                    invalidateTokenFileAndClose(true);
+                }
             }
         }
         catch (Exception e) {
