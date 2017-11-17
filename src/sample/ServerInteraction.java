@@ -160,6 +160,19 @@ public class ServerInteraction {
         }
     }
 
+    public int doSendDocument(String docLink) {
+        synchronized (outputs) {
+            try {
+                String answer = doCommand("senddoc", docLink);
+                return Integer.parseInt(answer.split(":")[1]);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return -1;
+            }
+        }
+    }
+
     public String doCommand(String command, String arg) {
         return new String(doBinaryAnswerCommand(command, arg));
     }
