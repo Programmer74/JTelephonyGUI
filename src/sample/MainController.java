@@ -57,6 +57,7 @@ public class MainController {
     @FXML private Button cmdConnect;
     @FXML private Button cmdFinishCall;
     @FXML private Button cmdSendImage;
+    @FXML private Button cmdSendDocument;
     @FXML private Button cmdLogout;
 
     @FXML private TextField txtCallTo;
@@ -186,6 +187,9 @@ public class MainController {
         txtMessageInput.prefWidthProperty().set(width - 460);
         cmdSendImage.layoutYProperty().set(txtMessageInput.layoutYProperty().get() + 2);
         cmdSendImage.layoutXProperty().set(txtMessageInput.prefWidthProperty().get() + 6);
+        cmdSendDocument.layoutXProperty().set(cmdSendImage.layoutXProperty().get());
+        cmdSendDocument.layoutYProperty().set(cmdSendImage.layoutYProperty().add(cmdSendImage.prefHeightProperty()).add(5).get());
+        /* Sorry, I have neither idea nor time on how to use those creepy layout managers */
     }
 
     public static String getCurrentDate() {
@@ -616,6 +620,41 @@ public class MainController {
     }
 
     @FXML
+    void cmdSendDocumentPressed(ActionEvent event) {
+
+        // request node address from user and add
+        TextInputDialog input = new TextInputDialog();
+        input.getEditor().setPromptText("http://something/");
+        input.setTitle("New Link");
+        input.setHeaderText("Enter new document address");
+        Optional<String> result = input.showAndWait();
+
+        if (result.isPresent()) {
+            String address = result.get().trim();
+
+            if (!address.startsWith("https://")) {
+                if (!address.startsWith("http://")) {
+                    address = "https://" + address;
+                }
+            }
+
+            System.out.println(address);
+
+            Integer id = srv.doSendDocument(address);
+            if (id <= 0) {
+                MessageBoxes.showAlert("An error while attaching document", "Doc info");
+                return;
+            }
+
+            if (txtMessageInput.getText().equals("")) txtMessageInput.setText(" ");
+            srv.doCommand("sendmsg", txtCallTo.getText() + ":" + Utils.Base64Encode(txtMessageInput.getText()) + ":" + id);
+
+            updateMessageHistory(txtCallTo.getText());
+            txtMessageInput.setText("");
+        }
+    }
+
+    @FXML
     void cmdLogoutPressed(ActionEvent event) {
         // Magic. Do not touch.
         LoginController lc = new LoginController();
@@ -650,6 +689,7 @@ public class MainController {
     }
 
     void webviewLinkFired(String url, String description) {
+        System.out.println("<" + url + "><" + description + ">");
         if (description.equals("")) {
             //data:image/jpeg;base64,
             //System.getProperty("java.io.tmpdir")
@@ -670,12 +710,15 @@ public class MainController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
+        } else if (description.startsWith("Document:")){
             try {
                 new ProcessBuilder("x-www-browser", url).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        Platform.runLater(() -> {
+            wvMessageHistory.getEngine().executeScript("window.stop()");
+        });
     }
 }
