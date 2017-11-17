@@ -132,7 +132,7 @@ public class LoginController {
 
     @FXML
     void cmdConnectPressed(ActionEvent event) {
-
+        cmdConnect.setDisable(true);
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(getClass().getResource("main.fxml"));

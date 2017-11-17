@@ -670,16 +670,23 @@ public class MainController {
                 System.out.println(imageToPath.get(imageid));
                 return imageToPath.get(imageid);
             }
-            byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", imageid.toString());
+
             String imagepath = "";
             if (System.getProperty("os.name").equals("Linux")) {
                 imagepath = System.getProperty("java.io.tmpdir") + "/" + imageid + ".jpg";
             } else {
                 imagepath = System.getProperty("java.io.tmpdir").replace("\\", "/") + imageid + ".jpg";
             }
-            FileOutputStream fos = new FileOutputStream(imagepath);
-            fos.write(imagebytes);
-            fos.close();
+
+            File f = new File(imagepath);
+            if(!(f.exists() && !f.isDirectory())) {
+                //there is no file in cache, should re-download it now
+
+                byte[] imagebytes = srv.doBinaryAnswerCommand("getimg", imageid.toString());
+                FileOutputStream fos = new FileOutputStream(imagepath);
+                fos.write(imagebytes);
+                fos.close();
+            }
             imageToPath.put(imageid, imagepath);
             System.out.println(imagepath) ;
             return imagepath;
