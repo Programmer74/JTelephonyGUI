@@ -62,7 +62,7 @@ public class Networking {
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
         try {
-            socket.setSoTimeout(100);
+            socket.setSoTimeout(150);
             socket.receive(receivePacket);
             int actualSize = receivePacket.getLength();
 

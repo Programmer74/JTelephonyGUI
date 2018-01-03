@@ -27,11 +27,13 @@
                <children>
                   <Label layoutX="7.0" layoutY="114.0" text="Status:" />
                   <Label fx:id="lblStatus" layoutX="7.0" layoutY="129.0" prefHeight="17.0" prefWidth="204.0" text="Nothing interesting" />
-                  <TextArea fx:id="txtLog" editable="false" layoutX="7.0" layoutY="208.0" prefHeight="245.0" prefWidth="187.0" wrapText="true" />
+                  <TextArea fx:id="txtLog" editable="false" layoutX="7.0" layoutY="208.0" prefHeight="200.0" prefWidth="187.0" wrapText="true" />
                   <TextFlow fx:id="tfMe" layoutX="5.0" layoutY="6.0" prefHeight="63.0" prefWidth="190.0" />
                   <Label layoutX="4.0" layoutY="189.0" text="History:" />
                   <Button fx:id="cmdFinishCall" layoutX="7.0" layoutY="156.0" mnemonicParsing="false" onAction="#cmdFinishCallPressed" prefHeight="25.0" prefWidth="72.0" text="Finish" visible="false" />
             <Button fx:id="cmdLogout" layoutX="124.0" layoutY="156.0" mnemonicParsing="false" onAction="#cmdLogoutPressed" text="LogOut" />
+            <Slider fx:id="sldMicQuality" blockIncrement="1.0" layoutX="18.0" layoutY="439.0" majorTickUnit="1.0" max="5.0" minorTickCount="0" onMouseReleased="#sldMicQualityMouseUp" prefHeight="15.0" prefWidth="165.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.0" />
+            <Label fx:id="lblMicQuality" layoutX="14.0" layoutY="415.0" text="Mic Quality: 2" />
                </children>
             </Pane>
          </right>

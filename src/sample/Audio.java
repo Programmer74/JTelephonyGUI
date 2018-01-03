@@ -3,11 +3,9 @@ package sample;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
-import javax.swing.JOptionPane;
 import java.io.*;
 import java.net.*;
 
@@ -26,18 +24,18 @@ class AudioFilter {
 
 public class Audio {
 
-    boolean DEBUG = true;
+    private boolean DEBUG = true;
 
-    AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
-    float rate = 8000.0f;
-    int channels = 1;
-    int sampleSize = 16;
-    boolean bigEndian = true;
-    AudioFormat format = null;
+    private AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
 
-    TargetDataLine microphone;
-    SourceDataLine speakers;
-    DataLine.Info dataLineInfo;
+    private int channels = 1;
+    private boolean bigEndian = true;
+
+    private AudioFormat format_spk = null;
+    private AudioFormat format_mic = null;
+
+    private TargetDataLine microphone;
+    private SourceDataLine speakers;
 
     public boolean isTalking() {
         return isTalking;
@@ -47,20 +45,27 @@ public class Audio {
         return isListening;
     }
 
-    boolean isTalking = false;
-    boolean isListening = false;
+    private boolean isTalking = false;
+    private boolean isListening = false;
 
-    Thread talkingThread = null;
-    Thread listeningThread = null;
+    private Thread talkingThread = null;
+    private Thread listeningThread = null;
 
-    int bytesUpload = 0;
-    int bytesDownload = 0;
+    private int bytesUpload = 0;
+    private int bytesDownload = 0;
 
-    int CHUNK_SIZE = 64;
+    public int getMicCapturedDataSize() {
+        return micCapturedDataSize;
+    }
 
-    //DatagramSocket socket = null;
-    InetAddress sendToIP;
-    int sendToPort;
+    public void setMicCapturedDataSize(int micCapturedDataSize) {
+        this.micCapturedDataSize = micCapturedDataSize;
+    }
+
+    private int micCapturedDataSize = 180;
+
+    private InetAddress sendToIP;
+    private int sendToPort;
 
     public int getMyID() {
         return myID;
@@ -70,46 +75,165 @@ public class Audio {
         this.myID = myID;
     }
 
-    int myID = 0;
-    Networking nwConnection = null;
+    private int myID = 0;
 
-    public Audio(float rate, int channels, InetAddress sendToIP, int sendToPort, int myID) {
+    public Networking getNwConnection() {
+        return nwConnection;
+    }
 
-        this.rate = rate;
-        this.channels = channels;
+    private Networking nwConnection = null;
+
+    /*
+        Quality setups:
+        0 - 8kHz, 8 bit
+        1 - 8kHz, 16 bit
+        2 - 16kHz, 16 bit
+        3 - 16kHz, 24 bit
+        4 - 44.1kHz, 16 bit
+        5 - 44.1kHz, 24 bit
+    */
+    private float getRateByQuality(int quality) {
+        switch (quality) {
+            case 0:
+            case 1:
+                return 8000.0f;
+            case 2:
+            case 3:
+                return 16000.0f;
+            case 4:
+            case 5:
+                return 44100.0f;
+        }
+        return 16000.0f;
+    }
+    private int getSSizeByQuality(int quality) {
+        switch (quality) {
+            case 0:
+                return 8;
+            case 1:
+            case 2:
+            case 4:
+                return 16;
+            case 3:
+            case 5:
+                return 24;
+        }
+        return 16;
+    }
+
+    private int myQualitySetupForSpeakers = 5;
+    private int myQualitySetupForMic = 5;
+
+    private int newQualitySetupForSpeakers = -1;
+    private int newQualitySetupForMic = -1;
+
+    public int getMyQualitySetupForSpeakers() {
+        return myQualitySetupForSpeakers;
+    }
+
+    public void setMyQualitySetupForSpeakers(int myQualitySetupForSpeakers) {
+        this.myQualitySetupForSpeakers = myQualitySetupForSpeakers;
+        updateSpeakerParamsByQuality(myQualitySetupForSpeakers);
+    }
+
+    public int getMyQualitySetupForMic() {
+        return myQualitySetupForMic;
+    }
+
+    public void setMyQualitySetupForMic(int myQualitySetupForMic) {
+        this.myQualitySetupForMic = myQualitySetupForMic;
+        updateMicrophoneParamsByQuality(myQualitySetupForMic);
+    }
+
+    private void updateSpeakerParams(float rate_spk, int sampleSize_spk) {
+        boolean wasListening = isListening();
+        if (isListening()) StopListening();
+
+        try {
+            format_spk = new AudioFormat(encoding, rate_spk, sampleSize_spk, channels, (sampleSize_spk / 8) * channels, rate_spk, bigEndian);
+
+            DataLine.Info info_spk = new DataLine.Info(SourceDataLine.class, format_spk);
+            speakers = (SourceDataLine) AudioSystem.getLine(info_spk);
+
+        }
+        catch (Exception ex) {
+            format_spk = null;
+            System.out.println("UpdateSpeakerParams: " + ex.toString());
+            ex.printStackTrace();
+            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
+        }
+        if (wasListening) Listen();
+    }
+    private void updateSpeakerParamsByQuality(int quality) {
+        float rate_spk = getRateByQuality(quality);
+        int ssize = getSSizeByQuality(quality);
+        updateSpeakerParams(rate_spk, ssize);
+        System.out.println("Updated Speaker quality to " + quality);
+    }
+
+    private void updateMicrophoneParams(float rate_mic, int sampleSize_mic) {
+        boolean wasTalking = isTalking();
+        if (isTalking()) StopTalking();
+
+        try {
+            format_mic = new AudioFormat(encoding, rate_mic, sampleSize_mic, channels, (sampleSize_mic / 8) * channels, rate_mic, bigEndian);
+
+            DataLine.Info info_mic = new DataLine.Info(TargetDataLine.class, format_mic);
+            microphone = (TargetDataLine) AudioSystem.getLine(info_mic);
+        }
+        catch (Exception ex) {
+            format_mic = null;
+            System.out.println("UpdateMicrophoneParams: " + ex.toString());
+            ex.printStackTrace();
+            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
+        }
+        if (wasTalking) Talk();
+    }
+    private void updateMicrophoneParamsByQuality(int quality) {
+        float rate_mic = getRateByQuality(quality);
+        int ssize = getSSizeByQuality(quality);
+        updateMicrophoneParams(rate_mic, ssize);
+        System.out.println("Updated Mic quality to " + quality);
+    }
+
+    public Audio(int qualitySetup, InetAddress sendToIP, int sendToPort, int myID) {
 
         this.sendToIP = sendToIP;
         this.sendToPort = sendToPort;
         this.myID = myID;
         System.out.println(sendToIP.toString());
-        try {
-            format = new AudioFormat(encoding, rate, sampleSize, channels, (sampleSize / 8) * channels, rate, bigEndian);
 
-            microphone = AudioSystem.getTargetDataLine(format);
-
-            DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-            microphone = (TargetDataLine) AudioSystem.getLine(info);
-
-            dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
-            speakers = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
-
-        }
-        catch (Exception ex) {
-            format = null;
-            System.out.println("AudioConstructor: " + ex.toString());
-            ex.printStackTrace();
-            MessageBoxes.showCriticalErrorAlert(ex.getMessage(), ex.toString());
-        }
+        this.myQualitySetupForSpeakers = qualitySetup;
+        this.myQualitySetupForMic = qualitySetup;
+        updateSpeakerParamsByQuality(myQualitySetupForSpeakers);
+        updateMicrophoneParamsByQuality(myQualitySetupForMic);
 
         nwConnection = new Networking(sendToIP, sendToPort);
+
+        Thread spkQualityThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    if (newQualitySetupForSpeakers != -1) {
+                        if (newQualitySetupForSpeakers != myQualitySetupForSpeakers) {
+                            updateSpeakerParamsByQuality(newQualitySetupForSpeakers);
+                            myQualitySetupForSpeakers = newQualitySetupForSpeakers;
+                            newQualitySetupForSpeakers = -1;
+                        }
+                    }
+                    Thread.yield();
+                }
+            }
+        });
+        spkQualityThread.start();
     }
 
     public void Talk() {
 
         System.err.println("talk is called");
         if (isTalking) return;
-        if (format == null) {
-            MessageBoxes.showCriticalErrorAlert("format is null", "");
+        if (format_mic == null) {
+            MessageBoxes.showCriticalErrorAlert("format_mic is null", "");
             return;
         }
         if (DEBUG) System.out.println("Talking initialized");
@@ -121,7 +245,7 @@ public class Audio {
 
 
         try {
-            microphone.open(format);
+            microphone.open(format_mic);
             microphone.start();
 
         }
@@ -137,15 +261,15 @@ public class Audio {
             public void run() {
                 int numbytesUpload = 0;
 
-                byte[] data = new byte[CHUNK_SIZE];
+                byte[] data = new byte[micCapturedDataSize];
 
                 DatagramPacket sendPacket;
 
                 while (isTalking) {
-                    numbytesUpload = microphone.read(data, 0, CHUNK_SIZE);
+                    numbytesUpload = microphone.read(data, 0, micCapturedDataSize);
                     bytesUpload += numbytesUpload;
 
-                    VoicePacket packet = new VoicePacket(myID, VoicePacket.TYPE_VOICE, 0, data);
+                    VoicePacket packet = new VoicePacket(myID, VoicePacket.TYPE_VOICE, myQualitySetupForMic, data);
                     nwConnection.sendVoicePacket(packet);
                     //System.out.println("Talking!");
                 }
@@ -169,14 +293,14 @@ public class Audio {
 
 
     public void Listen() {
-        if (format == null) return;
+        if (format_spk == null) return;
         if (DEBUG) System.out.println("Listening initialized");
         if (listeningThread != null) return;
         if (DEBUG) System.out.println("Listening began");
 
         try {
 
-            speakers.open(format);
+            speakers.open(format_spk);
             isListening = true;
             speakers.start();
         }
@@ -200,6 +324,13 @@ public class Audio {
                     try {
                         if (isListening == false) break;
                         if (nwConnection.receiveVoicePacketBlocking(packet) == 0) {
+                            if (packet.getmArg() != myQualitySetupForSpeakers) {
+                                if (newQualitySetupForSpeakers == -1) {
+                                    System.out.println("Mismatch found!");
+                                    newQualitySetupForSpeakers = packet.getmArg();
+                                }
+                                continue;
+                            }
                             speakers.write(packet.getPayload(), 0, packet.getPayload().length);
                             bytesDownload +=  packet.getPayload().length + 3;
 
@@ -222,7 +353,6 @@ public class Audio {
         if (isListening == false) return;
         isListening = false;
         try {
-
             listeningThread.join();
         }
         catch (Exception ex) {
@@ -244,7 +374,7 @@ public class Audio {
             int sample = 0;
 
             sample |= data[i++] & 0xFF; // (reverse these two lines
-            sample |= data[i++] << 8;   //  if the format is big endian)
+            sample |= data[i++] << 8;   //  if the format_spk is big endian)
 
             // normalize to range of +/-1.0f
             samples[s++] = sample / 32768f;

@@ -79,7 +79,7 @@ public class ServerInteraction {
             inputs = new DataInputStream(socket.getInputStream());
             outputs = new DataOutputStream(socket.getOutputStream());
 
-            audio = new Audio(48000, 1, InetAddress.getByName(ip), 7002, 0);
+            audio = new Audio(2, InetAddress.getByName(ip), 7002, 0);
 
             //outputs.writeUTF("nick " + nick);
             String myIdStr = doCommand("nick", nick); //inputs.readUTF();

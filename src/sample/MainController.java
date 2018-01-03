@@ -81,6 +81,9 @@ public class MainController {
     @FXML private WebView wvMessageHistory;
     @FXML private TextArea txtMessageInput;
 
+    @FXML private Label lblMicQuality;
+    @FXML private Slider sldMicQuality;
+
     private boolean isWaitingAnswer = false;
     private boolean launchedSound = false;
     private int callWaitCounter = 0;
@@ -174,6 +177,13 @@ public class MainController {
                 }
             }
         });
+
+        sldMicQuality.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                                Number old_val, Number new_val) {
+                lblMicQuality.setText("Mic Quality: " + new_val.intValue());
+            }
+        });
     }
 
     public void formResize(int width, int height) {
@@ -226,7 +236,7 @@ public class MainController {
         th.start();
 
 
-        System.out.println(status);
+        //System.out.println(status);
     }
 
     //when we detect incoming call in proxy
@@ -407,7 +417,7 @@ public class MainController {
                         }
 
                         if (cmd.equals("called_by") && (srv.isMeTalking() == false)) {
-                            if (audio.isTalking) break;
+                            if (audio.isTalking()) break;
                             if (isWaitingAnswer) break;
                             isWaitingAnswer = true;
                             notifyIncomingCall(arg);
@@ -473,7 +483,7 @@ public class MainController {
 
         audio = srv.getAudio();
         statusThread.start();
-        audio.nwConnection.sendVoicePacket(new VoicePacket(audio.getMyID(), 0, 0, new byte[3]));
+        audio.getNwConnection().sendVoicePacket(new VoicePacket(audio.getMyID(), 0, 0, new byte[3]));
 
         formLoad();
     }
@@ -727,5 +737,13 @@ public class MainController {
         Platform.runLater(() -> {
             wvMessageHistory.getEngine().executeScript("window.stop()");
         });
+    }
+
+    @FXML
+    void sldMicQualityMouseUp() {
+        if (audio != null) {
+            audio.setMyQualitySetupForMic(((Double)(sldMicQuality.getValue())).intValue());
+            //audio.setMyQualitySetupForSpeakers(((Double)(sldMicQuality.getValue())).intValue());
+        }
     }
 }
