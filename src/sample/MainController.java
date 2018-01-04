@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -84,6 +85,9 @@ public class MainController {
     @FXML private Label lblMicQuality;
     @FXML private Slider sldMicQuality;
 
+    @FXML private MenuItem mnuCall;
+    @FXML private MenuItem mnuFinishCall;
+
     private boolean isWaitingAnswer = false;
     private boolean launchedSound = false;
     private int callWaitCounter = 0;
@@ -134,12 +138,14 @@ public class MainController {
 
             if (userInfo[4].equals("online") && !nickname.equals("!!me")) {
                 cmdCall.setDisable(false);
+                mnuCall.setDisable(false);
             } else {
+                mnuCall.setDisable(true);
                 cmdCall.setDisable(true);
             }
 
         } catch (Exception ex) {
-
+            ex.printStackTrace();
         }
     }
 
@@ -190,10 +196,10 @@ public class MainController {
         if (!MainController.formShown) return;
         System.out.println(width + ":" + height);
         paneMain.prefWidthProperty().set(width - 400);
-        paneMain.prefHeightProperty().set(height - 10);
+        paneMain.prefHeightProperty().set(height - 40);
         wvMessageHistory.prefWidthProperty().set(paneMain.prefWidthProperty().get() - wvMessageHistory.layoutXProperty().get() * 2);
         wvMessageHistory.prefHeightProperty().set(paneMain.prefHeightProperty().get() - 100);
-        txtMessageInput.layoutYProperty().set(height - txtMessageInput.prefHeightProperty().get() - 31);
+        txtMessageInput.layoutYProperty().set(height - txtMessageInput.prefHeightProperty().get() - 62);
         txtMessageInput.prefWidthProperty().set(width - 460);
         cmdSendImage.layoutYProperty().set(txtMessageInput.layoutYProperty().get() + 2);
         cmdSendImage.layoutXProperty().set(txtMessageInput.prefWidthProperty().get() + 6);
@@ -274,10 +280,12 @@ public class MainController {
             }});
     }
     //when person we are talking to finishes call
+    boolean shownCallStopped = false;
     private void notifyStoppedCall() {
-        //srv.hasBeenTalking = false;
+        if (shownCallStopped) return;
+        shownCallStopped = true;
         MessageBoxes.showAlert("Your call was finished.", "Call info");
-        //srv.doCommand("call_hangup");
+        shownCallStopped = false;
     }
     //when person we are talking to breaks connection
     private void notifyCompanionErrorCall() {
@@ -315,7 +323,9 @@ public class MainController {
         setStatus(status);
         txtCallTo.setDisable(true);
         cmdCall.setDisable(true);
+        mnuCall.setDisable(true);
         cmdFinishCall.setVisible(true);
+        mnuFinishCall.setDisable(false);
     }
 
     private void updateClientsNoWrap() {
@@ -337,7 +347,7 @@ public class MainController {
                         if (new_val.equals(old_val)) return;
                         if (txtCallTo.getText().equals(new_val)) return;
                         txtCallTo.setText(new_val);
-                        cmdCall.setDisable(false);
+                        //cmdCall.setDisable(false);
                         updateUserInfoUI(tfUser, new_val);
                         updateMessageHistory(new_val);
                     }
@@ -490,6 +500,7 @@ public class MainController {
 
     @FXML
     void cmdCallPressed(ActionEvent event) {
+        if (cmdCall.isDisabled()) return;
         String s = txtCallTo.getText();
         if (s.equals("")) return;
         System.out.println("CALL " + s);
@@ -512,13 +523,13 @@ public class MainController {
 
         txtCallTo.setDisable(false);
         cmdCall.setDisable(false);
+        mnuCall.setDisable(false);
         cmdFinishCall.setVisible(false);
-
+        mnuFinishCall.setDisable(true);
     }
 
     @FXML
     void cmdFinishCallPressed(ActionEvent event) {
-
         hangupCall();
 
         audio.StopListening();
@@ -669,6 +680,11 @@ public class MainController {
         // Magic. Do not touch.
         LoginController lc = new LoginController();
         lc.invalidateTokenFileAndClose(false);
+    }
+
+    @FXML
+    void cmdClosePressed(ActionEvent event) {
+        System.exit(0);
     }
 
     private Map<Integer, String> imageToPath = new HashMap<>();
