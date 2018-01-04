@@ -32,8 +32,6 @@
                   <Label layoutX="4.0" layoutY="189.0" text="History:" />
                   <Button fx:id="cmdFinishCall" layoutX="7.0" layoutY="156.0" mnemonicParsing="false" onAction="#cmdFinishCallPressed" prefHeight="25.0" prefWidth="72.0" text="Finish" visible="false" />
             <Button fx:id="cmdLogout" layoutX="124.0" layoutY="156.0" mnemonicParsing="false" onAction="#cmdLogoutPressed" text="LogOut" />
-            <Slider fx:id="sldMicQuality" blockIncrement="1.0" layoutX="14.0" layoutY="431.0" majorTickUnit="1.0" max="5.0" minorTickCount="0" onMouseReleased="#sldMicQualityMouseUp" prefHeight="15.0" prefWidth="165.0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.0" />
-            <Label fx:id="lblMicQuality" layoutX="10.0" layoutY="400.0" text="Mic Quality: 2" />
                </children>
             </Pane>
          </right>
@@ -65,7 +63,39 @@
                   <MenuItem mnemonicParsing="false" onAction="#cmdSendImagePressed" text="Attach image..." />
               </items>
             </Menu>
-          <Menu mnemonicParsing="false" text="Settings" />
+          <Menu mnemonicParsing="false" text="Settings">
+               <items>
+                  <Menu mnemonicParsing="false" text="Audio Quality">
+                    <items>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" text="Worst">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="qgrp" />
+                           </toggleGroup>
+                        </RadioMenuItem>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" text="Usable" toggleGroup="$qgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" selected="true" text="Decent" toggleGroup="$qgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" text="Fine" toggleGroup="$qgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" text="Great" toggleGroup="$qgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuQualityChanged" text="Best" toggleGroup="$qgrp" />
+                    </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Chunk Size">
+                    <items>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="30">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="cgrp" />
+                           </toggleGroup>
+                        </RadioMenuItem>
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="60" toggleGroup="$cgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="90" toggleGroup="$cgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" selected="true" text="180" toggleGroup="$cgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="270" toggleGroup="$cgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="450" toggleGroup="$cgrp" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#mnuChunkSizeChanged" text="900" toggleGroup="$cgrp" />
+                    </items>
+                  </Menu>
+               </items>
+          </Menu>
         </menus>
       </MenuBar>
    </top>

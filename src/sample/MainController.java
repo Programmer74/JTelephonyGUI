@@ -82,9 +82,6 @@ public class MainController {
     @FXML private WebView wvMessageHistory;
     @FXML private TextArea txtMessageInput;
 
-    @FXML private Label lblMicQuality;
-    @FXML private Slider sldMicQuality;
-
     @FXML private MenuItem mnuCall;
     @FXML private MenuItem mnuFinishCall;
 
@@ -181,13 +178,6 @@ public class MainController {
                         txtMessageInput.appendText(System.getProperty("line.separator"));
                     }
                 }
-            }
-        });
-
-        sldMicQuality.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                                Number old_val, Number new_val) {
-                lblMicQuality.setText("Mic Quality: " + new_val.intValue());
             }
         });
     }
@@ -756,10 +746,38 @@ public class MainController {
     }
 
     @FXML
-    void sldMicQualityMouseUp() {
+    void mnuQualityChanged(ActionEvent event) {
+        int quality = 2;
+        switch (((MenuItem)(event.getSource())).getText()) {
+            case "Worst":
+                quality = 0;
+                break;
+            case "Usable":
+                quality = 1;
+                break;
+            case "Decent":
+                quality = 2;
+                break;
+            case "Fine":
+                quality = 3;
+                break;
+            case "Great":
+                quality = 4;
+                break;
+            case "Best":
+                quality = 5;
+                break;
+        }
         if (audio != null) {
-            audio.setMyQualitySetupForMic(((Double)(sldMicQuality.getValue())).intValue());
-            //audio.setMyQualitySetupForSpeakers(((Double)(sldMicQuality.getValue())).intValue());
+            audio.setMyQualitySetupForMic(quality);
+        }
+    }
+
+    @FXML
+    void mnuChunkSizeChanged(ActionEvent event) {
+        int chunkSize = Integer.parseInt(((MenuItem)(event.getSource())).getText());
+        if (audio != null) {
+            audio.setMicCapturedDataSize(chunkSize);
         }
     }
 }

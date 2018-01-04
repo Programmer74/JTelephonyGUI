@@ -260,13 +260,14 @@ public class Audio {
             @Override
             public void run() {
                 int numbytesUpload = 0;
+                int micDataSize = micCapturedDataSize;
 
-                byte[] data = new byte[micCapturedDataSize];
+                byte[] data = new byte[micDataSize];
 
                 DatagramPacket sendPacket;
 
                 while (isTalking) {
-                    numbytesUpload = microphone.read(data, 0, micCapturedDataSize);
+                    numbytesUpload = microphone.read(data, 0, micDataSize);
                     bytesUpload += numbytesUpload;
 
                     VoicePacket packet = new VoicePacket(myID, VoicePacket.TYPE_VOICE, myQualitySetupForMic, data);
