@@ -1,21 +1,15 @@
 package sample;
 
-import java.applet.Applet;
 import java.util.*;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -43,7 +37,8 @@ public class LoginController {
 
     @FXML private Pane paneConnect;
 
-    private final String filePath = "token.dat";
+    private final String nicknameFilePath = "nickname.dat";
+    private final String tokenFilePath = "token.dat";
 
     public LoginController() {
         Thread t = new Thread(() -> {
@@ -71,7 +66,8 @@ public class LoginController {
         txtPassword.setOnKeyPressed(eh);
 
         try {
-            String content = new Scanner(new File(filePath)).useDelimiter("\\Z").next();
+            txtNickname.setText(new Scanner(new File(nicknameFilePath)).useDelimiter("\\Z").next());
+            String content = new Scanner(new File(tokenFilePath)).useDelimiter("\\Z").next();
             tokenString = content;
             Platform.runLater(() -> cmdConnect.fire());
         } catch (IOException ex) {
@@ -100,7 +96,9 @@ public class LoginController {
     }
 
     public void invalidateTokenFileAndClose(boolean rebootRequired) {
-        File file = new File(filePath);
+        File file = new File(tokenFilePath);
+        file.delete();
+        file = new File(nicknameFilePath);
         file.delete();
         if (rebootRequired) {
             try {
@@ -173,13 +171,21 @@ public class LoginController {
                 if (tokenString == null) {
                     String achievedToken = mc.getSrv().doCommand("gettoken");
 
-                    try (PrintWriter out = new PrintWriter(filePath)) {
+                    try (PrintWriter out = new PrintWriter(tokenFilePath)) {
                         System.out.println("Token " + achievedToken + " saved.");
                         out.print(achievedToken);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         return;
                     }
+                }
+
+                try (PrintWriter out = new PrintWriter(nicknameFilePath)) {
+                    System.out.println("Nick " + txtNickname.getText() + " saved.");
+                    out.print(txtNickname.getText());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return;
                 }
 
                 stage.show();
