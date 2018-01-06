@@ -70,7 +70,7 @@ public class ServerInteraction {
     }
 
 
-    public void connect(String ip, int port, String nick) {
+    public void connect(String ip, int port, String nick) throws java.lang.Exception{
         try {
 
             socket = new Socket(InetAddress.getByName(ip), port);
@@ -97,6 +97,7 @@ public class ServerInteraction {
         } catch (Exception ex) {
             System.err.println("In connect: " + ex.toString());
             isConnected = false;
+            throw ex;
         }
     }
 

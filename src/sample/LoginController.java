@@ -87,8 +87,8 @@ public class LoginController {
     private void updateServerIP() {
         String ip = "";
         try {
-            ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
-            //ip = "localhost";
+            //ip = (Networking.getUrlSource("http://p74apps.tk/JT/ip.txt"));
+            ip = "localhost";
             while(txtServerIP == null) {Thread.yield();}
             txtServerIP.setText(ip);
             //txtServerIP.setDisable(true);
@@ -191,15 +191,13 @@ public class LoginController {
                 stage.show();
                 mc.doConnectSuccess();
 
-            } else {
-                MessageBoxes.showCriticalErrorAlert("Cannot connect to server.\nTry again later.", "Error");
-                if (tokenString != null) {
-                    invalidateTokenFileAndClose(true);
-                }
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            MessageBoxes.showCriticalErrorAlert("Cannot connect to server.\n" + e.getMessage(), "Error");
+            if (tokenString != null) {
+                invalidateTokenFileAndClose(true);
+            }
         }
     }
 
