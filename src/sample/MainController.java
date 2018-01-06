@@ -91,6 +91,9 @@ public class MainController {
     private final int callWaitTime = 300;
     private String currentStatus = "";
 
+    private javafx.scene.image.Image onlineImage;
+    private javafx.scene.image.Image offlineImage;
+
     public MainController() {
         Thread t = new Thread(() -> {
             while(!MainController.formShown) Thread.yield();
@@ -180,6 +183,18 @@ public class MainController {
                 }
             }
         });
+
+        BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Graphics g = img.getGraphics();
+
+        g.setColor(Color.GREEN);
+        g.fillOval(1,1,15,15);
+        onlineImage = SwingFXUtils.toFXImage(img, null);
+
+        g.setColor(Color.GRAY);
+        g.fillOval(1,1,15,15);
+        offlineImage = SwingFXUtils.toFXImage(img, null);
+
     }
 
     public void formResize(int width, int height) {
@@ -318,14 +333,17 @@ public class MainController {
         mnuFinishCall.setDisable(false);
     }
 
+    Map<String, Boolean> isOnline = new HashMap<>();
     private void updateClientsNoWrap() {
-
 
         String allClients = srv.doCommand("ls");
         ObservableList<String> items = FXCollections.observableArrayList();
+        isOnline.clear();
+
         for(String nick: allClients.split(";")) {
             if (!nick.equals("")) {
-                items.add(nick);
+                items.add(nick.substring(1));
+                isOnline.put(nick.substring(1), (nick.charAt(0) == '+'));
             }
         }
         lbUsersOnline.setItems(items);
@@ -342,6 +360,25 @@ public class MainController {
                         updateMessageHistory(new_val);
                     }
                 });
+        lbUsersOnline.setCellFactory(param -> new ListCell<String>() {
+            private ImageView imageView = new ImageView();
+            @Override
+            public void updateItem(String name, boolean empty) {
+                super.updateItem(name, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Boolean isUserOnline = (isOnline != null ? isOnline.get(name) : null);
+                    if(isUserOnline != null && isUserOnline)
+                        imageView.setImage(onlineImage);
+                    else
+                        imageView.setImage(offlineImage);
+                    setText(name);
+                    setGraphic(imageView);
+                }
+            }
+        });
     }
     private void updateClients() {
         Task task = new Task<Void>() {
